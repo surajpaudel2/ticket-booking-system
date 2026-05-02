@@ -1,9 +1,16 @@
-package com.tbs.userservice.service;
+package com.tbs.userservice.service.impl;
 
 import com.tbs.userservice.dto.request.CreateUserRequest;
 import com.tbs.userservice.dto.request.UpdateProfileRequest;
+import com.tbs.userservice.dto.response.UserResponse;
 import com.tbs.userservice.entity.User;
 import com.tbs.userservice.entity.enums.Role;
+import com.tbs.userservice.exception.DuplicateUserException;
+import com.tbs.userservice.exception.UnauthorizedAccessException;
+import com.tbs.userservice.exception.UserNotFoundException;
+import com.tbs.userservice.repository.UserRepository;
+import com.tbs.userservice.service.UserCacheService;
+import com.tbs.userservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,22 +22,22 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UserServiceImpl {
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final UserCacheService userCacheService;
 
     // ─────────────────────────────────────────────
     // INTERNAL — called by auth-service after registration
     // ─────────────────────────────────────────────
 
+    @Override
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
         log.info("Attempting to create new user with email: {}", request.email());
-
         validateUserCreationPayload(request);
 
-        User newUser = buildNewUserEntity(request);
-        User savedUser = userRepository.save(newUser);
+        User savedUser = userRepository.save(buildNewUserEntity(request));
 
         log.info("Successfully created user ID: {} with role: {}", savedUser.getId(), savedUser.getRole());
         return toResponse(savedUser);
@@ -40,26 +47,32 @@ public class UserServiceImpl {
     // INTERNAL — called by auth-service during login
     // ─────────────────────────────────────────────
 
+    @Override
     @Transactional(readOnly = true)
     public UserResponse getUserByEmail(String email) {
-        log.debug("Fetching user details for email: {}", email);
+        UserResponse cachedProfile = userCacheService.getUserByEmail(email);
+        if (cachedProfile != null) {
+            return cachedProfile;
+        }
+
         User user = fetchUserEntityByEmail(email);
-        return toResponse(user);
+        UserResponse response = toResponse(user);
+
+        userCacheService.saveUser(response);
+        return response;
     }
 
     // ─────────────────────────────────────────────
-    // CUSTOMER — profile management
+    // Ticket Holder — profile management
     // ─────────────────────────────────────────────
 
+    @Override
     @Transactional(readOnly = true)
     public UserResponse getCurrentUserProfile() {
-        UUID currentUserId = fetchAuthenticatedUserId();
-        log.debug("Fetching profile for current user ID: {}", currentUserId);
-
-        User user = fetchUserEntityById(currentUserId);
-        return toResponse(user);
+        return getUserById(fetchAuthenticatedUserId());
     }
 
+    @Override
     @Transactional
     public UserResponse updateCurrentUserProfile(UpdateProfileRequest request) {
         UUID currentUserId = fetchAuthenticatedUserId();
@@ -69,21 +82,33 @@ public class UserServiceImpl {
         applyProfileUpdates(user, request);
 
         User updatedUser = userRepository.save(user);
+        UserResponse response = toResponse(updatedUser);
+
+        userCacheService.saveUser(response);
         log.info("Successfully updated profile for user ID: {}", currentUserId);
-        return toResponse(updatedUser);
+        return response;
     }
 
     // ─────────────────────────────────────────────
     // ADMIN — user management
     // ─────────────────────────────────────────────
 
+    @Override
     @Transactional(readOnly = true)
     public UserResponse getUserById(UUID userId) {
-        log.debug("Admin fetching user details for ID: {}", userId);
+        UserResponse cachedProfile = userCacheService.getUserById(userId);
+        if (cachedProfile != null) {
+            return cachedProfile;
+        }
+
         User user = fetchUserEntityById(userId);
-        return toResponse(user);
+        UserResponse response = toResponse(user);
+
+        userCacheService.saveUser(response);
+        return response;
     }
 
+    @Override
     @Transactional
     public UserResponse updateUserActiveStatus(UUID userId, boolean isActive) {
         log.info("Admin attempting to set active status to {} for user ID: {}", isActive, userId);
@@ -93,23 +118,20 @@ public class UserServiceImpl {
 
         user.setActive(isActive);
         User updatedUser = userRepository.save(user);
+        UserResponse response = toResponse(updatedUser);
 
+        userCacheService.saveUser(response);
         log.info("Successfully set active status to {} for user ID: {}", isActive, userId);
-        return toResponse(updatedUser);
+        return response;
     }
 
     // ─────────────────────────────────────────────
-    // PRIVATE HELPERS — Validation & Mapping
+    // PRIVATE HELPERS
     // ─────────────────────────────────────────────
 
     private void validateUserCreationPayload(CreateUserRequest request) {
         if (userRepository.existsByEmail(request.email())) {
-            log.warn("User creation failed: Email {} is already in use", request.email());
             throw new DuplicateUserException("Email already exists: " + request.email());
-        }
-        if (userRepository.existsByUsername(request.username())) {
-            log.warn("User creation failed: Username {} is already taken", request.username());
-            throw new DuplicateUserException("Username already taken: " + request.username());
         }
     }
 
@@ -123,79 +145,53 @@ public class UserServiceImpl {
     }
 
     private void applyProfileUpdates(User user, UpdateProfileRequest request) {
-        // 1. Handle standard profile fields
         if (request.fullName() != null) user.setFullName(request.fullName());
         if (request.dateOfBirth() != null) user.setDateOfBirth(request.dateOfBirth());
         if (request.profilePictureUrl() != null) user.setProfilePictureUrl(request.profilePictureUrl());
 
-        // 2. Handle the high-risk Email update separately
         if (request.email() != null && !request.email().equalsIgnoreCase(user.getEmail())) {
             updateUserEmail(user, request.email());
         }
     }
 
     private void updateUserEmail(User user, String newEmail) {
-        log.info("User ID {} is attempting to change email to {}", user.getId(), newEmail);
+        log.info("User ID {} is changing email from {} to {}", user.getId(), user.getEmail(), newEmail);
 
-        // Rule 1: Ensure no one else is already using this new email
         if (userRepository.existsByEmail(newEmail)) {
-            log.warn("Email update failed: {} is already taken", newEmail);
             throw new DuplicateUserException("Email already exists: " + newEmail);
         }
 
-        // Rule 2: Update the local database
+        userCacheService.evictUserByEmail(user.getEmail());
         user.setEmail(newEmail);
 
-        // Rule 3: TODO - Sync with Auth Service!
-        // You MUST notify the auth-service that the credential has changed.
-        // syncEmailWithAuthService(user.getId(), newEmail);
+        // TODO: Sync with Auth Service
     }
 
     private void validateNotAdminTarget(User user) {
         if (user.getRole() == Role.ROLE_ADMIN) {
-            log.warn("Status update failed: Target user {} is an ADMIN", user.getId());
             throw new UnauthorizedAccessException("Cannot modify status of an admin user");
         }
     }
 
-    // ─────────────────────────────────────────────
-    // PRIVATE HELPERS — Data Fetching
-    // ─────────────────────────────────────────────
-
     private User fetchUserEntityById(UUID userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("User fetch failed: ID {} not found", userId);
-                    return new UserNotFoundException("User not found: " + userId);
-                });
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
     }
 
     private User fetchUserEntityByEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> {
-                    log.warn("User fetch failed: Email {} not found", email);
-                    return new UserNotFoundException("User not found with email: " + email);
-                });
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
     }
 
     private UUID fetchAuthenticatedUserId() {
-        String principal = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getName();
-        return UUID.fromString(principal);
+        return UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
     }
-
-    // ─────────────────────────────────────────────
-    // PRIVATE HELPERS — Transformers
-    // ─────────────────────────────────────────────
 
     private UserResponse toResponse(User user) {
         return new UserResponse(
                 user.getId(),
                 user.getEmail(),
-                user.getUsername(),
                 user.getFullName(),
-                user.getPhoneNumber(),
                 user.getDateOfBirth(),
                 user.getProfilePictureUrl(),
                 user.getRole(),
