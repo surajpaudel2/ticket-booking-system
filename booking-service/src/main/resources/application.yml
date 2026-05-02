@@ -1,0 +1,8 @@
+server:
+  port: 1111
+
+spring:
+  application:
+    name: booking-service
+  config:
+    import: "optional:configserver:http://localhost:8081"
