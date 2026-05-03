@@ -40,7 +40,7 @@ public class UserController {
                 .body(ApiResponse.success("User created successfully", response));
     }
 
-    @GetMapping("/internal/by-email")
+    @GetMapping("/admin/by-email")
     public ResponseEntity<ApiResponse<UserResponse>> getUserByEmail(
             @RequestParam String email) {
 

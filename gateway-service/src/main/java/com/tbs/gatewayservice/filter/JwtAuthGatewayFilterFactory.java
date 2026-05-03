@@ -1,0 +1,139 @@
+package com.tbs.gatewayservice.filter;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tbs.gatewayservice.dto.ApiResponse;
+import com.tbs.gatewayservice.security.JwtTokenProvider;
+import io.jsonwebtoken.Claims;
+import org.springframework.cloud.gateway.filter.GatewayFilter;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
+
+import java.util.Optional;
+
+import static com.tbs.gatewayservice.constant.GatewayConstants.*;
+
+@Component
+public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<JwtAuthGatewayFilterFactory.Config> {
+
+    private final JwtTokenProvider jwtTokenProvider;
+    private final ObjectMapper objectMapper;
+
+    public JwtAuthGatewayFilterFactory(JwtTokenProvider jwtTokenProvider, ObjectMapper objectMapper) {
+        super(Config.class);
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.objectMapper = objectMapper;
+    }
+
+    @Override
+    public GatewayFilter apply(Config config) {
+        return (exchange, chain) -> {
+            Optional<String> bearerToken = extractBearerTokenFromHeader(exchange);
+            if (bearerToken.isEmpty()) {
+                return handleMissingToken(exchange);
+            }
+            return validateAndProcessToken(bearerToken.get(), config, exchange, chain);
+        };
+    }
+
+    private Optional<String> extractBearerTokenFromHeader(ServerWebExchange exchange) {
+        String authorizationHeader = exchange.getRequest().getHeaders().getFirst(HEADER_AUTHORIZATION);
+        if (authorizationHeader == null || !isBearerToken(authorizationHeader)) {
+            return Optional.empty();
+        }
+        return Optional.of(authorizationHeader.substring(BEARER_PREFIX.length()));
+    }
+
+    private boolean isAuthorizationHeaderPresent(ServerWebExchange exchange) {
+        String header = exchange.getRequest().getHeaders().getFirst(HEADER_AUTHORIZATION);
+        return header != null && !header.isBlank();
+    }
+
+    private boolean isBearerToken(String authorizationHeader) {
+        return authorizationHeader.startsWith(BEARER_PREFIX);
+    }
+
+    private Mono<Void> validateAndProcessToken(String token, Config config, ServerWebExchange exchange, GatewayFilterChain chain) {
+        if (!jwtTokenProvider.validateToken(token)) {
+            return handleInvalidToken(exchange);
+        }
+        Claims jwtClaims = jwtTokenProvider.extractClaimsFromToken(token);
+        String userId = jwtTokenProvider.extractUserIdFromClaims(jwtClaims);
+        String role = jwtTokenProvider.extractRoleFromClaims(jwtClaims);
+        ServerWebExchange mutatedExchange = buildMutatedRequest(exchange, userId, role);
+        return checkAdminRoleIfRequired(role, config, exchange, chain, mutatedExchange);
+    }
+
+    private Mono<Void> checkAdminRoleIfRequired(String role, Config config, ServerWebExchange exchange, GatewayFilterChain chain, ServerWebExchange mutatedExchange) {
+        if (!config.isRequiresAdmin()) {
+            return chain.filter(mutatedExchange);
+        }
+        if (!isAdminRole(role)) {
+            return handleInsufficientRole(exchange);
+        }
+        return chain.filter(mutatedExchange);
+    }
+
+    private boolean isAdminRole(String role) {
+        return ROLE_ADMIN.equals(role);
+    }
+
+    private ServerWebExchange buildMutatedRequest(ServerWebExchange exchange, String userId, String role) {
+        return exchange.mutate()
+                .request(r -> r
+                        .header(HEADER_USER_ID, userId)
+                        .header(HEADER_USER_ROLES, role))
+                .build();
+    }
+
+    private Mono<Void> handleMissingToken(ServerWebExchange exchange) {
+        return buildErrorResponse(exchange, HttpStatus.UNAUTHORIZED, "Authentication token is missing");
+    }
+
+    private Mono<Void> handleInvalidToken(ServerWebExchange exchange) {
+        return buildErrorResponse(exchange, HttpStatus.UNAUTHORIZED, "Authentication token is invalid or expired");
+    }
+
+    private Mono<Void> handleInsufficientRole(ServerWebExchange exchange) {
+        return buildErrorResponse(exchange, HttpStatus.FORBIDDEN, "You do not have permission to access this resource");
+    }
+
+    private Mono<Void> buildErrorResponse(ServerWebExchange exchange, HttpStatus status, String message) {
+        ServerHttpResponse response = exchange.getResponse();
+        response.setStatusCode(status);
+        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+        try {
+            byte[] errorBytes = objectMapper.writeValueAsBytes(ApiResponse.error(message));
+            DataBuffer dataBuffer = response.bufferFactory().wrap(errorBytes);
+            return response.writeWith(Mono.just(dataBuffer));
+        } catch (JsonProcessingException e) {
+            return response.setComplete();
+        }
+    }
+
+    public static class Config {
+
+        private boolean requiresAdmin;
+
+        public Config() {}
+
+        public Config(boolean requiresAdmin) {
+            this.requiresAdmin = requiresAdmin;
+        }
+
+        public boolean isRequiresAdmin() {
+            return requiresAdmin;
+        }
+
+        public void setRequiresAdmin(boolean requiresAdmin) {
+            this.requiresAdmin = requiresAdmin;
+        }
+    }
+}
