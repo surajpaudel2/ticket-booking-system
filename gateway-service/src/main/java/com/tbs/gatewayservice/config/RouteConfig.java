@@ -2,6 +2,8 @@ package com.tbs.gatewayservice.config;
 
 import com.tbs.gatewayservice.filter.JwtAuthGatewayFilterFactory;
 import com.tbs.gatewayservice.ratelimit.RateLimiterKeyResolver;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.ratelimit.KeyResolver;
 import org.springframework.cloud.gateway.filter.ratelimit.RedisRateLimiter;
@@ -14,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import static com.tbs.gatewayservice.constant.GatewayConstants.*;
 
 @Configuration
+@RequiredArgsConstructor
 public class RouteConfig {
 
     private final JwtAuthGatewayFilterFactory jwtAuthGatewayFilterFactory;
@@ -36,12 +39,6 @@ public class RouteConfig {
 
     @Value("${rate-limiter.admin.burst-capacity}")
     private int adminBurstCapacity;
-
-    public RouteConfig(JwtAuthGatewayFilterFactory jwtAuthGatewayFilterFactory,
-                       RateLimiterKeyResolver rateLimiterKeyResolver) {
-        this.jwtAuthGatewayFilterFactory = jwtAuthGatewayFilterFactory;
-        this.rateLimiterKeyResolver = rateLimiterKeyResolver;
-    }
 
     @Bean
     public RouteLocator gatewayRoutes(RouteLocatorBuilder builder) {

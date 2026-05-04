@@ -139,7 +139,7 @@ public class UserServiceImpl implements UserService {
         return User.builder()
                 .email(request.email())
                 .fullName(request.fullName())
-                .role(Role.ROLE_TICKET_HOLDER)
+                .role(Role.ROLE_CUSTOMER)
                 .active(true)
                 .build();
     }

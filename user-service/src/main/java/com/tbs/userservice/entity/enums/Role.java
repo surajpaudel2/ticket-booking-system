@@ -3,6 +3,6 @@ package com.tbs.userservice.entity.enums;
 public enum Role {
 
     ROLE_ADMIN,
-    ROLE_TICKET_HOLDER
+    ROLE_CUSTOMER
 
 }

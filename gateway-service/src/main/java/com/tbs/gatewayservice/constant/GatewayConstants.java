@@ -12,7 +12,7 @@ public final class GatewayConstants {
     public static final String BEARER_PREFIX         = "Bearer ";
 
     public static final String ROLE_ADMIN    = "ROLE_ADMIN";
-    public static final String ROLE_CUSTOMER = "ROLE_CUSTOMER";
+    public static final String ROLE_TICKET_HOLDER = "ROLE_TICKET_HOLDER";
 
     public static final String CB_AUTH_SERVICE    = "authServiceCB";
     public static final String CB_USER_SERVICE    = "userServiceCB";

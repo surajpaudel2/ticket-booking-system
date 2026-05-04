@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tbs.gatewayservice.dto.ApiResponse;
 import com.tbs.gatewayservice.security.JwtTokenProvider;
 import io.jsonwebtoken.Claims;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -21,16 +22,11 @@ import java.util.Optional;
 import static com.tbs.gatewayservice.constant.GatewayConstants.*;
 
 @Component
+@RequiredArgsConstructor
 public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<JwtAuthGatewayFilterFactory.Config> {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final ObjectMapper objectMapper;
-
-    public JwtAuthGatewayFilterFactory(JwtTokenProvider jwtTokenProvider, ObjectMapper objectMapper) {
-        super(Config.class);
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.objectMapper = objectMapper;
-    }
 
     @Override
     public GatewayFilter apply(Config config) {
