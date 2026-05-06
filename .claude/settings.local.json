@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Suraj Paudel\\\\OneDrive\\\\Desktop\\\\ticket-booking-system\" -Recurse -Force)",
+      "Bash(Select-Object FullName)",
+      "Bash(Sort-Object FullName)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Suraj Paudel\\\\OneDrive\\\\Desktop\\\\ticket-booking-system\\\\user-service\" -Recurse)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(del \"C:\\\\Users\\\\Suraj Paudel\\\\OneDrive\\\\Desktop\\\\ticket-booking-system\\\\auth-service\\\\src\\\\main\\\\java\\\\com\\\\tbs\\\\authservice\\\\dto\\\\response\\\\UserProfileResponse.java\")",
+      "Bash(del \"C:\\\\Users\\\\Suraj Paudel\\\\OneDrive\\\\Desktop\\\\ticket-booking-system\\\\auth-service\\\\src\\\\main\\\\java\\\\com\\\\tbs\\\\authservice\\\\dto\\\\request\\\\CreateUserProfileRequest.java\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Suraj Paudel\\\\OneDrive\\\\Desktop\\\\ticket-booking-system\" -Directory)",
+      "Bash(Select-Object Name)"
+    ]
+  }
+}

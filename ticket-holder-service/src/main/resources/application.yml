@@ -1,0 +1,18 @@
+server:
+  port: 5555
+
+spring:
+  application:
+    name: ticket-holder-service
+  config:
+    import: "optional:configserver:"
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8080/eureka
