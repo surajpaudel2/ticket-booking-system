@@ -48,6 +48,7 @@ public class UserController {
     }
 
     @GetMapping("/admin/by-email")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<UserResponse>> getUserByEmail(
             @RequestParam String email) {
 

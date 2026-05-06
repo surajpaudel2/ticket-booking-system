@@ -6,11 +6,3 @@ spring:
     name: gateway-service
   config:
     import: "optional:configserver:http://localhost:8081"
-
-
-logging:
-  level:
-    io.lettuce.core: DEBUG
-    io.lettuce.core.protocol: DEBUG
-    org.springframework.data.redis: DEBUG
-    org.springframework.cloud.gateway.filter.ratelimit.RedisRateLimiter: DEBUG

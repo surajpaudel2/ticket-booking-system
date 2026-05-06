@@ -50,7 +50,6 @@ public class GatewayExceptionHandler implements WebExceptionHandler {
     }
 
     private Mono<Void> handleGenericException(ServerWebExchange exchange) {
-        log.debug("An unexpected error occurred while processing the request: {}", exchange.getRequest().getURI(), exchange.getResponse());
         return buildErrorResponse(exchange, HttpStatus.INTERNAL_SERVER_ERROR,
                 "An unexpected error occurred. Please try again later.");
     }
