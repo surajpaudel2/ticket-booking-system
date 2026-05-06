@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="admin-service" target="21" />
+      <module name="auth-service" target="21" />
+      <module name="booking-service" target="21" />
+      <module name="config-server" target="21" />
+      <module name="eureka-server" target="21" />
+      <module name="event-service" target="21" />
+      <module name="gateway-service" target="21" />
+      <module name="notification-service" target="21" />
+      <module name="payment-service" target="21" />
+      <module name="ticket-holder-service" target="21" />
+      <module name="user-service" target="21" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
