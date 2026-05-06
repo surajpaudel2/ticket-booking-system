@@ -2,9 +2,8 @@ package com.tbs.gatewayservice.config;
 
 import com.tbs.gatewayservice.filter.JwtAuthGatewayFilterFactory;
 import com.tbs.gatewayservice.ratelimit.RateLimiterKeyResolver;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.gateway.filter.ratelimit.KeyResolver;
 import org.springframework.cloud.gateway.filter.ratelimit.RedisRateLimiter;
 import org.springframework.cloud.gateway.route.RouteLocator;
@@ -22,23 +21,15 @@ public class RouteConfig {
     private final JwtAuthGatewayFilterFactory jwtAuthGatewayFilterFactory;
     private final RateLimiterKeyResolver rateLimiterKeyResolver;
 
-    @Value("${rate-limiter.public.replenish-rate}")
-    private int publicReplenishRate;
+    // ── Spring-managed beans — Redis is properly injected by IoC container ──
+    @Qualifier("publicRateLimiter")
+    private final RedisRateLimiter publicRateLimiter;
 
-    @Value("${rate-limiter.public.burst-capacity}")
-    private int publicBurstCapacity;
+    @Qualifier("authenticatedRateLimiter")
+    private final RedisRateLimiter authenticatedRateLimiter;
 
-    @Value("${rate-limiter.authenticated.replenish-rate}")
-    private int authenticatedReplenishRate;
-
-    @Value("${rate-limiter.authenticated.burst-capacity}")
-    private int authenticatedBurstCapacity;
-
-    @Value("${rate-limiter.admin.replenish-rate}")
-    private int adminReplenishRate;
-
-    @Value("${rate-limiter.admin.burst-capacity}")
-    private int adminBurstCapacity;
+    @Qualifier("adminRateLimiter")
+    private final RedisRateLimiter adminRateLimiter;
 
     @Bean
     public RouteLocator gatewayRoutes(RouteLocatorBuilder builder) {
@@ -48,6 +39,10 @@ public class RouteConfig {
         routes = registerAdminRoutes(routes);
         return routes.build();
     }
+
+    // ─────────────────────────────────────────────
+    // ROUTE GROUPS
+    // ─────────────────────────────────────────────
 
     private RouteLocatorBuilder.Builder registerPublicRoutes(RouteLocatorBuilder.Builder routes) {
         return routeToAuthService(routes);
@@ -66,15 +61,23 @@ public class RouteConfig {
         return routeToAdminService(routes);
     }
 
+    // ─────────────────────────────────────────────
+    // PUBLIC ROUTES — no JWT required, keyed by IP
+    // ─────────────────────────────────────────────
+
     private RouteLocatorBuilder.Builder routeToAuthService(RouteLocatorBuilder.Builder routes) {
         KeyResolver publicKeyResolver = rateLimiterKeyResolver.resolvePublicRouteKey();
         return routes.route("auth-public", r -> r
                 .path("/auth/register", "/auth/login", "/auth/refresh")
                 .filters(f -> applyCircuitBreaker(
-                        applyRateLimiter(f, publicReplenishRate, publicBurstCapacity, publicKeyResolver),
+                        applyPublicRateLimiter(f, publicKeyResolver),
                         CB_AUTH_SERVICE, FALLBACK_AUTH))
                 .uri("lb://auth-service"));
     }
+
+    // ─────────────────────────────────────────────
+    // PROTECTED ROUTES — JWT required, keyed by userId
+    // ─────────────────────────────────────────────
 
     private RouteLocatorBuilder.Builder routeToAuthServiceLogout(RouteLocatorBuilder.Builder routes) {
         KeyResolver authenticatedKeyResolver = rateLimiterKeyResolver.resolveAuthenticatedRouteKey();
@@ -82,9 +85,9 @@ public class RouteConfig {
         return routes.route("auth-logout", r -> r
                 .path("/auth/logout")
                 .filters(f -> applyCircuitBreaker(
-                        applyRateLimiter(
+                        applyAuthenticatedRateLimiter(
                                 f.filter(jwtAuthGatewayFilterFactory.apply(authConfig)),
-                                authenticatedReplenishRate, authenticatedBurstCapacity, authenticatedKeyResolver),
+                                authenticatedKeyResolver),
                         CB_AUTH_SERVICE, FALLBACK_AUTH))
                 .uri("lb://auth-service"));
     }
@@ -95,9 +98,9 @@ public class RouteConfig {
         return routes.route("user-service", r -> r
                 .path("/api/users/**")
                 .filters(f -> applyCircuitBreaker(
-                        applyRateLimiter(
+                        applyAuthenticatedRateLimiter(
                                 f.filter(jwtAuthGatewayFilterFactory.apply(authConfig)),
-                                authenticatedReplenishRate, authenticatedBurstCapacity, authenticatedKeyResolver),
+                                authenticatedKeyResolver),
                         CB_USER_SERVICE, FALLBACK_USER))
                 .uri("lb://user-service"));
     }
@@ -108,9 +111,9 @@ public class RouteConfig {
         return routes.route("event-service", r -> r
                 .path("/api/events/**")
                 .filters(f -> applyCircuitBreaker(
-                        applyRateLimiter(
+                        applyAuthenticatedRateLimiter(
                                 f.filter(jwtAuthGatewayFilterFactory.apply(authConfig)),
-                                authenticatedReplenishRate, authenticatedBurstCapacity, authenticatedKeyResolver),
+                                authenticatedKeyResolver),
                         CB_EVENT_SERVICE, FALLBACK_EVENT))
                 .uri("lb://event-service"));
     }
@@ -121,9 +124,9 @@ public class RouteConfig {
         return routes.route("booking-service", r -> r
                 .path("/api/bookings/**")
                 .filters(f -> applyCircuitBreaker(
-                        applyRateLimiter(
+                        applyAuthenticatedRateLimiter(
                                 f.filter(jwtAuthGatewayFilterFactory.apply(authConfig)),
-                                authenticatedReplenishRate, authenticatedBurstCapacity, authenticatedKeyResolver),
+                                authenticatedKeyResolver),
                         CB_BOOKING_SERVICE, FALLBACK_BOOKING))
                 .uri("lb://booking-service"));
     }
@@ -134,12 +137,16 @@ public class RouteConfig {
         return routes.route("payment-service", r -> r
                 .path("/api/payments/**")
                 .filters(f -> applyCircuitBreaker(
-                        applyRateLimiter(
+                        applyAuthenticatedRateLimiter(
                                 f.filter(jwtAuthGatewayFilterFactory.apply(authConfig)),
-                                authenticatedReplenishRate, authenticatedBurstCapacity, authenticatedKeyResolver),
+                                authenticatedKeyResolver),
                         CB_PAYMENT_SERVICE, FALLBACK_PAYMENT))
                 .uri("lb://payment-service"));
     }
+
+    // ─────────────────────────────────────────────
+    // ADMIN ROUTES — JWT + admin role required
+    // ─────────────────────────────────────────────
 
     private RouteLocatorBuilder.Builder routeToAdminService(RouteLocatorBuilder.Builder routes) {
         KeyResolver authenticatedKeyResolver = rateLimiterKeyResolver.resolveAuthenticatedRouteKey();
@@ -147,16 +154,32 @@ public class RouteConfig {
         return routes.route("admin-service", r -> r
                 .path("/api/admin/**")
                 .filters(f -> applyCircuitBreaker(
-                        applyRateLimiter(
+                        applyAdminRateLimiter(
                                 f.filter(jwtAuthGatewayFilterFactory.apply(adminConfig)),
-                                adminReplenishRate, adminBurstCapacity, authenticatedKeyResolver),
+                                authenticatedKeyResolver),
                         CB_ADMIN_SERVICE, FALLBACK_ADMIN))
                 .uri("lb://admin-service"));
     }
 
-    private GatewayFilterSpec applyRateLimiter(GatewayFilterSpec filterSpec, int replenishRate, int burstCapacity, KeyResolver keyResolver) {
+    // ─────────────────────────────────────────────
+    // FILTER HELPERS
+    // ─────────────────────────────────────────────
+
+    private GatewayFilterSpec applyPublicRateLimiter(GatewayFilterSpec filterSpec, KeyResolver keyResolver) {
         return filterSpec.requestRateLimiter(config -> config
-                .setRateLimiter(new RedisRateLimiter(replenishRate, burstCapacity, 1))
+                .setRateLimiter(publicRateLimiter)
+                .setKeyResolver(keyResolver));
+    }
+
+    private GatewayFilterSpec applyAuthenticatedRateLimiter(GatewayFilterSpec filterSpec, KeyResolver keyResolver) {
+        return filterSpec.requestRateLimiter(config -> config
+                .setRateLimiter(authenticatedRateLimiter)
+                .setKeyResolver(keyResolver));
+    }
+
+    private GatewayFilterSpec applyAdminRateLimiter(GatewayFilterSpec filterSpec, KeyResolver keyResolver) {
+        return filterSpec.requestRateLimiter(config -> config
+                .setRateLimiter(adminRateLimiter)
                 .setKeyResolver(keyResolver));
     }
 

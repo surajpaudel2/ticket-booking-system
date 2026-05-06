@@ -79,10 +79,11 @@
             <scope>annotationProcessor</scope>
         </dependency>
 
+        <!-- Source: https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.8.17</version> <!-- Use the latest 2.x version for Spring Boot 3.x/4.x -->
+            <version>3.0.3</version>
         </dependency>
 
         <!-- You will also need the validation starter if you don't already have it -->
@@ -97,11 +98,16 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
+        <!-- Remove explicit versions if you are using Spring Boot -->
         <dependency>
-            <groupId>tools.jackson.datatype</groupId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <!-- <version>2.15.2</version> REMOVE THIS -->
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>3.0.0-rc2</version>
-            <scope>compile</scope>
+            <!-- <version>2.14.0</version> REMOVE THIS -->
         </dependency>
     </dependencies>
     <dependencyManagement>

@@ -3,6 +3,7 @@ package com.tbs.gatewayservice.exception;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tbs.gatewayservice.dto.ApiResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebExceptionHandler;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Component
 @Order(-1)
 public class GatewayExceptionHandler implements WebExceptionHandler {
@@ -48,6 +50,7 @@ public class GatewayExceptionHandler implements WebExceptionHandler {
     }
 
     private Mono<Void> handleGenericException(ServerWebExchange exchange) {
+        log.debug("An unexpected error occurred while processing the request: {}", exchange.getRequest().getURI(), exchange.getResponse());
         return buildErrorResponse(exchange, HttpStatus.INTERNAL_SERVER_ERROR,
                 "An unexpected error occurred. Please try again later.");
     }

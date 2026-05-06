@@ -6,6 +6,7 @@ import com.tbs.gatewayservice.dto.ApiResponse;
 import com.tbs.gatewayservice.security.JwtTokenProvider;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -21,6 +22,7 @@ import java.util.Optional;
 
 import static com.tbs.gatewayservice.constant.GatewayConstants.*;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<JwtAuthGatewayFilterFactory.Config> {
@@ -31,6 +33,8 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
+            log.debug("JwtAuthGatewayFilter execution started for URI: {}", exchange.getRequest().getURI());
+
             Optional<String> bearerToken = extractBearerTokenFromHeader(exchange);
             if (bearerToken.isEmpty()) {
                 return handleMissingToken(exchange);
@@ -60,9 +64,13 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
         if (!jwtTokenProvider.validateToken(token)) {
             return handleInvalidToken(exchange);
         }
+
         Claims jwtClaims = jwtTokenProvider.extractClaimsFromToken(token);
         String userId = jwtTokenProvider.extractUserIdFromClaims(jwtClaims);
         String role = jwtTokenProvider.extractRoleFromClaims(jwtClaims);
+
+        log.debug("Token validated successfully. Extracted userId: {}, role: {}", userId, role);
+
         ServerWebExchange mutatedExchange = buildMutatedRequest(exchange, userId, role);
         return checkAdminRoleIfRequired(role, config, exchange, chain, mutatedExchange);
     }
@@ -72,8 +80,11 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
             return chain.filter(mutatedExchange);
         }
         if (!isAdminRole(role)) {
+            log.warn("Access denied: User with role '{}' attempted to access admin resource at URI: {}", role, exchange.getRequest().getURI());
             return handleInsufficientRole(exchange);
         }
+
+        log.debug("Admin role verified successfully for request URI: {}", exchange.getRequest().getURI());
         return chain.filter(mutatedExchange);
     }
 
@@ -90,10 +101,12 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
     }
 
     private Mono<Void> handleMissingToken(ServerWebExchange exchange) {
+        log.warn("Authentication failed: Missing or malformed Bearer token for URI: {}", exchange.getRequest().getURI());
         return buildErrorResponse(exchange, HttpStatus.UNAUTHORIZED, "Authentication token is missing");
     }
 
     private Mono<Void> handleInvalidToken(ServerWebExchange exchange) {
+        log.warn("Authentication failed: Invalid or expired token for URI: {}", exchange.getRequest().getURI());
         return buildErrorResponse(exchange, HttpStatus.UNAUTHORIZED, "Authentication token is invalid or expired");
     }
 
@@ -110,6 +123,7 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
             DataBuffer dataBuffer = response.bufferFactory().wrap(errorBytes);
             return response.writeWith(Mono.just(dataBuffer));
         } catch (JsonProcessingException e) {
+            log.error("Failed to serialize error response to JSON for URI: {}", exchange.getRequest().getURI(), e);
             return response.setComplete();
         }
     }
