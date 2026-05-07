@@ -61,18 +61,18 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
     }
 
     private Mono<Void> validateAndProcessToken(String token, Config config, ServerWebExchange exchange, GatewayFilterChain chain) {
-        if (!jwtTokenProvider.validateToken(token)) {
-            return handleInvalidToken(exchange);
-        }
 
-        Claims jwtClaims = jwtTokenProvider.extractClaimsFromToken(token);
-        String userId = jwtTokenProvider.extractUserIdFromClaims(jwtClaims);
-        String role = jwtTokenProvider.extractRoleFromClaims(jwtClaims);
+        return jwtTokenProvider.validateAndExtractClaims(token)
+                .map(claims -> {
+                    String userId = jwtTokenProvider.extractUserIdFromClaims(claims);
+                    String role = jwtTokenProvider.extractRoleFromClaims(claims);
 
-        log.debug("Token validated successfully. Extracted userId: {}, role: {}", userId, role);
+                    log.debug("Token validated successfully. Extracted userId: {}, role: {}", userId, role);
 
-        ServerWebExchange mutatedExchange = buildMutatedRequest(exchange, userId, role);
-        return checkAdminRoleIfRequired(role, config, exchange, chain, mutatedExchange);
+                    ServerWebExchange mutatedExchange = buildMutatedRequest(exchange, userId, role);
+                    return checkAdminRoleIfRequired(role, config, exchange, chain, mutatedExchange);
+                })
+                .orElseGet(() -> handleInvalidToken(exchange));
     }
 
     private Mono<Void> checkAdminRoleIfRequired(String role, Config config, ServerWebExchange exchange, GatewayFilterChain chain, ServerWebExchange mutatedExchange) {

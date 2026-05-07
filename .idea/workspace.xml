@@ -4,65 +4,26 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5134f512-53e2-4d03-b2f6-8b8daa119a41" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/-tree -r develop --name-only" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin-service/HELP.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/HELP.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/application.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/application.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/AuthServiceApplication.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/client/UserServiceClient.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/client/dto/request/CreateUserRequest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/client/dto/response/UserResponse.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/config/OpenApiConfig.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/config/SecurityConfig.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/controller/AuthController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/dto/ApiResponse.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/dto/request/LoginRequest$LoginRequestBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/dto/request/LoginRequest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/dto/request/RefreshTokenRequest$RefreshTokenRequestBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/dto/request/RefreshTokenRequest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/dto/request/RegisterRequest$RegisterRequestBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/dto/request/RegisterRequest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/dto/response/AuthResponse.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/entity/Credential$CredentialBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/entity/Credential.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/entity/RefreshToken$RefreshTokenBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/entity/RefreshToken.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/exception/EmailAlreadyExistsException.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/exception/GlobalExceptionHandler.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/exception/InvalidCredentialsException.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/exception/InvalidTokenException.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/repository/CredentialRepository.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/repository/RefreshTokenRepository.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/security/GatewayHeaderAuthFilter.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/security/JwtTokenProvider.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/service/AuthService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/com/tbs/authservice/service/impl/AuthServiceImpl.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/classes/db/migration/V1__create_auth_tables.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/target/test-classes/com/tbs/authservice/AuthServiceApplicationTests.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/config-server/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/config-server/.idea/compiler.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/config-server/.idea/encodings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/config-server/.idea/jarRepositories.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/config-server/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/config-server/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/config-server/HELP.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/config-server/target/classes/application-git.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/config-server/target/classes/application-native.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/config-server/target/classes/application.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/config-server/target/classes/com/tbs/configserver/ConfigServerApplication.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/eureka-server/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/eureka-server/.idea/compiler.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/eureka-server/.idea/encodings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/eureka-server/.idea/jarRepositories.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/eureka-server/.idea/misc.xml" beforeDir="false" />
+    <list default="true" id="b0322196-44d5-47e0-9bf8-2ed0b3bfeac6" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eureka-server/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/eureka-server/HELP.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/eureka-server/target/classes/application.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/eureka-server/target/classes/com/tbs/eurekaserver/EurekaServerApplication.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/event-service/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/event-service/.idea/compiler.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/event-service/.idea/encodings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/event-service/.idea/jarRepositories.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gateway-service/src/main/java/com/tbs/gatewayservice/filter/JwtAuthGatewayFilterFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/gateway-service/src/main/java/com/tbs/gatewayservice/filter/JwtAuthGatewayFilterFactory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gateway-service/src/main/java/com/tbs/gatewayservice/security/JwtTokenProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/gateway-service/src/main/java/com/tbs/gatewayservice/security/JwtTokenProvider.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {

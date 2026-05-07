@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -35,6 +36,20 @@ public class JwtTokenProvider {
             log.warn("JWT validation failed: {}", e.getMessage());
         }
         return false;
+    }
+
+    public Optional<Claims> validateAndExtractClaims(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return Optional.of(claims);
+        } catch (ExpiredJwtException e) {
+            log.warn("JWT expired: {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            log.warn("Malformed JWT: {}", e.getMessage());
+        } catch (JwtException e) {
+            log.warn("JWT validation failed: {}", e.getMessage());
+        }
+        return Optional.empty();
     }
 
     public Claims extractAllClaims(String token) {
