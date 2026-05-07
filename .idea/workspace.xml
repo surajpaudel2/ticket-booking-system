@@ -6,32 +6,51 @@
   <component name="ChangeListManager">
     <list default="true" id="b0322196-44d5-47e0-9bf8-2ed0b3bfeac6" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/eureka-server/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/eureka-server/HELP.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/eureka-server/target/classes/application.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/eureka-server/target/classes/com/tbs/eurekaserver/EurekaServerApplication.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/event-service/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/event-service/.idea/compiler.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/event-service/.idea/encodings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/event-service/.idea/jarRepositories.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/gateway-service/src/main/java/com/tbs/gatewayservice/filter/JwtAuthGatewayFilterFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/gateway-service/src/main/java/com/tbs/gatewayservice/filter/JwtAuthGatewayFilterFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gateway-service/src/main/java/com/tbs/gatewayservice/security/JwtTokenProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/gateway-service/src/main/java/com/tbs/gatewayservice/security/JwtTokenProvider.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/com/tbs/authservice/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/com/tbs/authservice/controller/AuthController.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_C:/Users/Suraj Paudel/OneDrive/Desktop/ticket-booking-system" value="3DNbR7rPujrGqoOd4DjIQuRkZFn" />
+    </persistenceIdMap>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 3,
+  "fromUser": false
+}]]></component>
+  <component name="ProjectId" id="3DNbR7rPujrGqoOd4DjIQuRkZFn" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "git-widget-placeholder": "develop",
-    "node.js.selected.package.tslint": "(autodetect)"
+    "git-widget-placeholder": "fix/auth-route-versioned-paths",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm"
   }
 }]]></component>
   <component name="TaskManager">
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
   </component>
 </project>
