@@ -3,6 +3,7 @@ package com.tbs.gatewayservice.config;
 import com.tbs.gatewayservice.filter.JwtAuthGatewayFilterFactory;
 import com.tbs.gatewayservice.ratelimit.RateLimiterKeyResolver;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.gateway.filter.ratelimit.KeyResolver;
 import org.springframework.cloud.gateway.filter.ratelimit.RedisRateLimiter;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 
 import static com.tbs.gatewayservice.constant.GatewayConstants.*;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class RouteConfig {
@@ -33,10 +35,12 @@ public class RouteConfig {
 
     @Bean
     public RouteLocator gatewayRoutes(RouteLocatorBuilder builder) {
+        log.info("Registering gateway routes...");
         RouteLocatorBuilder.Builder routes = builder.routes();
         routes = registerPublicRoutes(routes);
         routes = registerProtectedRoutes(routes);
         routes = registerAdminRoutes(routes);
+        log.info("Gateway routes registered successfully");
         return routes.build();
     }
 
@@ -68,7 +72,7 @@ public class RouteConfig {
     private RouteLocatorBuilder.Builder routeToAuthService(RouteLocatorBuilder.Builder routes) {
         KeyResolver publicKeyResolver = rateLimiterKeyResolver.resolvePublicRouteKey();
         return routes.route("auth-public", r -> r
-                .path("/auth/register", "/auth/login", "/auth/refresh")
+                .path("/api/*/auth/register", "/api/*/auth/login", "/api/*/auth/refresh")
                 .filters(f -> applyCircuitBreaker(
                         applyPublicRateLimiter(f, publicKeyResolver),
                         CB_AUTH_SERVICE, FALLBACK_AUTH))
@@ -83,7 +87,7 @@ public class RouteConfig {
         KeyResolver authenticatedKeyResolver = rateLimiterKeyResolver.resolveAuthenticatedRouteKey();
         JwtAuthGatewayFilterFactory.Config authConfig = new JwtAuthGatewayFilterFactory.Config(false);
         return routes.route("auth-logout", r -> r
-                .path("/auth/logout")
+                .path("/api/*/auth/logout")
                 .filters(f -> applyCircuitBreaker(
                         applyAuthenticatedRateLimiter(
                                 f.filter(jwtAuthGatewayFilterFactory.apply(authConfig)),
@@ -96,7 +100,7 @@ public class RouteConfig {
         KeyResolver authenticatedKeyResolver = rateLimiterKeyResolver.resolveAuthenticatedRouteKey();
         JwtAuthGatewayFilterFactory.Config authConfig = new JwtAuthGatewayFilterFactory.Config(false);
         return routes.route("user-service", r -> r
-                .path("/api/users/**")
+                .path("/api/*/users/**")
                 .filters(f -> applyCircuitBreaker(
                         applyAuthenticatedRateLimiter(
                                 f.filter(jwtAuthGatewayFilterFactory.apply(authConfig)),
@@ -109,7 +113,7 @@ public class RouteConfig {
         KeyResolver authenticatedKeyResolver = rateLimiterKeyResolver.resolveAuthenticatedRouteKey();
         JwtAuthGatewayFilterFactory.Config authConfig = new JwtAuthGatewayFilterFactory.Config(false);
         return routes.route("event-service", r -> r
-                .path("/api/events/**")
+                .path("/api/*/events/**")
                 .filters(f -> applyCircuitBreaker(
                         applyAuthenticatedRateLimiter(
                                 f.filter(jwtAuthGatewayFilterFactory.apply(authConfig)),
@@ -122,7 +126,7 @@ public class RouteConfig {
         KeyResolver authenticatedKeyResolver = rateLimiterKeyResolver.resolveAuthenticatedRouteKey();
         JwtAuthGatewayFilterFactory.Config authConfig = new JwtAuthGatewayFilterFactory.Config(false);
         return routes.route("booking-service", r -> r
-                .path("/api/bookings/**")
+                .path("/api/*/bookings/**")
                 .filters(f -> applyCircuitBreaker(
                         applyAuthenticatedRateLimiter(
                                 f.filter(jwtAuthGatewayFilterFactory.apply(authConfig)),
@@ -135,7 +139,7 @@ public class RouteConfig {
         KeyResolver authenticatedKeyResolver = rateLimiterKeyResolver.resolveAuthenticatedRouteKey();
         JwtAuthGatewayFilterFactory.Config authConfig = new JwtAuthGatewayFilterFactory.Config(false);
         return routes.route("payment-service", r -> r
-                .path("/api/payments/**")
+                .path("/api/*/payments/**")
                 .filters(f -> applyCircuitBreaker(
                         applyAuthenticatedRateLimiter(
                                 f.filter(jwtAuthGatewayFilterFactory.apply(authConfig)),
@@ -152,7 +156,7 @@ public class RouteConfig {
         KeyResolver authenticatedKeyResolver = rateLimiterKeyResolver.resolveAuthenticatedRouteKey();
         JwtAuthGatewayFilterFactory.Config adminConfig = new JwtAuthGatewayFilterFactory.Config(true);
         return routes.route("admin-service", r -> r
-                .path("/api/admin/**")
+                .path("/api/*/admin/**")
                 .filters(f -> applyCircuitBreaker(
                         applyAdminRateLimiter(
                                 f.filter(jwtAuthGatewayFilterFactory.apply(adminConfig)),
