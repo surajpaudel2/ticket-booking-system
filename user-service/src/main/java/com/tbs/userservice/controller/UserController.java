@@ -47,8 +47,9 @@ public class UserController {
                 .body(ApiResponse.success("User created successfully", response));
     }
 
-    @GetMapping("/admin/by-email")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    // This one can be called by only admin, or by the internal service i.e. Auth-service only.
+    @GetMapping("/by-email")
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<UserResponse>> getUserByEmail(
             @RequestParam String email) {
 

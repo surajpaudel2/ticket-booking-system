@@ -15,6 +15,7 @@ public interface UserServiceClient {
     @PostMapping("/internal")
     ApiResponse<UserResponse> createUser(@RequestBody CreateUserRequest request);
 
-    @GetMapping("/internal/by-email")
+    // TODO: Might need to update the url in future.
+    @GetMapping("/by-email")
     ApiResponse<UserResponse> getUserByEmail(@RequestParam String email);
 }
