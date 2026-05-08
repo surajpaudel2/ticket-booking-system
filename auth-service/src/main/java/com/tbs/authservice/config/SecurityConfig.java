@@ -1,6 +1,6 @@
 package com.tbs.authservice.config;
 
-import com.tbs.authservice.security.GatewayHeaderAuthFilter;
+import com.tbs.authservice.filter.GatewayHeaderAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private static final String[] PUBLIC_ENDPOINTS = {
-            "/auth/register", "/auth/login", "/auth/refresh",
+            "/api/*/auth/register", "/api/*/auth/login", "/api/*/auth/refresh",
             "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**"
     };
 
