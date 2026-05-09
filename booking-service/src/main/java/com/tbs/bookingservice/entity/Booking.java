@@ -12,27 +12,39 @@ import java.util.List;
 
 @Entity
 @Table(name = "booking")
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
-//Note for this class if we need the ticket related details then we will be using the feign client helps to get the things about  ticket like total tickets, ticket details and so on.
-//We will find whether the user is a season ticket holder or the normal ticket holder by using the user id.
+// Core booking aggregate for the booking-service.
+// Ticket details (seat number, fixture, price) live in event-service and are fetched via Feign client when needed.
+// Whether the user is a season ticket holder is determined at booking time using userId against event-service.
 public class Booking {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // userId from user-service — no FK constraint since the user lives in a separate microservice.
+    // Validated at the application layer when the booking is created.
     @Column(nullable = false)
     private Long userId;
 
-    @OneToMany(mappedBy = "booking", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    // OneToMany: one booking can have multiple cancellation records (e.g. retry attempts, partial cancellations).
+    // mappedBy = "booking": CancelledBooking owns the FK; this is the inverse read-only view.
+    // CascadeType.ALL + LAZY: cancellation records are lifecycle-bound to the booking — deleted with it, loaded on demand.
+    @OneToMany(mappedBy = "booking", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CancelledBooking> cancelledBookings = new ArrayList<>();
 
-    @OneToMany(mappedBy = "booking", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    // OneToMany: one booking can be rebooked multiple times (e.g. fixture postponed twice in a season).
+    // mappedBy = "booking": RebookedBooking owns the FK; this is the inverse read-only view.
+    // CascadeType.ALL + LAZY: rebooking records are lifecycle-bound to the booking — deleted with it, loaded on demand.
+    @OneToMany(mappedBy = "booking", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RebookedBooking> rebookedBookings = new ArrayList<>();
 
+    // Stored as STRING so the column value is human-readable (e.g. "PENDING", "CONFIRMED", "CANCELLED").
+    // Avoids fragile ordinal-based mapping that breaks if the enum order ever changes.
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BookingStatus status;

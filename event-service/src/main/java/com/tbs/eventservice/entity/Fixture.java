@@ -1,5 +1,6 @@
 package com.tbs.eventservice.entity;
 
+import com.tbs.eventservice.entity.enums.FixtureClassification;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -24,42 +25,47 @@ public class Fixture {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
-    @OneToOne
-    Season season;
+    @Column(length = 100, nullable = false)
+    private String homeTeamName;
 
-    @OneToMany(mappedBy = "fixture", cascade = CascadeType.ALL) // Because one fixture can be postponded multiple times.
-    List<PostponedRecord> postponedRecords = new ArrayList<>();
+    @Column(length = 100, nullable = false)
+    private String awayTeamName;
 
-    @OneToMany(mappedBy = "fixture", cascade = CascadeType.ALL)
-    Set<Ticket> tickets = new HashSet<>(); // To get total users who came to the fixtures, we can get how many booking were made from the tickets only as well
+    @Column(length = 100, nullable = false)
+    private String stadiumName;
 
+    @Column(length = 100, nullable = false)
+    private FixtureClassification classification;
 
-    int nextSeat;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "season_id")
+    private Season season;
 
-    int totalSeats;
+    @OneToMany(mappedBy = "fixture", cascade = CascadeType.ALL, fetch = FetchType.LAZY) // Because one fixture can be postponed multiple times.
+    private List<PostponedRecord> postponedRecords = new ArrayList<>();
 
-    LocalDateTime originalScheduledStartTime; // never changes — the first planned kickoff
+    @OneToMany(mappedBy = "fixture", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Ticket> tickets = new HashSet<>(); // To get total users who came to the fixtures, we can get how many bookings were made from the tickets only as well
 
-    LocalDateTime currentScheduledStartTime;  // updates on every postponement
+    private int nextSeat;
 
-    LocalDateTime actualStartTime;            // set when fixture physically begins
+    private int totalSeats;
 
-    LocalDateTime actualEndTime;              // set when fixture physically ends
+    private LocalDateTime originalScheduledStartTime; // never changes — the first planned kickoff
 
-    double pricePerSeat;
+    private LocalDateTime currentScheduledStartTime;  // updates on every postponement
+
+    private LocalDateTime actualStartTime;            // set when fixture physically begins
+
+    private LocalDateTime actualEndTime;              // set when fixture physically ends
+
+    private double pricePerSeat;
 
     @CreationTimestamp
-    LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    LocalDateTime updatedAt;
-
-//    getTotalBookedSeats() {
-////        will get this one by the logic.
-//    }
-
-
-
+    private LocalDateTime updatedAt;
 }
