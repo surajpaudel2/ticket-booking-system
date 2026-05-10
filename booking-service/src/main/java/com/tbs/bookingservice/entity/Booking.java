@@ -31,6 +31,24 @@ public class Booking {
     @Column(nullable = false)
     private Long userId;
 
+    @Column(nullable = false)
+    private Long fixtureId;
+
+    private Long bookingAttemptId;
+
+    @Column(nullable = false)
+    private int requestedSeats;
+
+    @Column(nullable = false)
+    private double pricePerSeat;
+
+    @Column(nullable = false)
+    private double totalAmount;
+
+    private String paymentIntentId;
+
+    private LocalDateTime expiresAt;
+
     // OneToMany: one booking can have multiple cancellation records (e.g. retry attempts, partial cancellations).
     // mappedBy = "booking": CancelledBooking owns the FK; this is the inverse read-only view.
     // CascadeType.ALL + LAZY: cancellation records are lifecycle-bound to the booking — deleted with it, loaded on demand.

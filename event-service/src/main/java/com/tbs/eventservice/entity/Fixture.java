@@ -53,6 +53,12 @@ public class Fixture {
 
     private int totalSeats;
 
+    @Column(nullable = false)
+    private int availableSeats;
+
+    @Version
+    private Long version;
+
     private LocalDateTime originalScheduledStartTime; // never changes — the first planned kickoff
 
     private LocalDateTime currentScheduledStartTime;  // updates on every postponement
