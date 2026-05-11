@@ -1,12 +1,12 @@
 package com.tbs.eventservice.exception;
 
-/** Thrown when a fixture does not have enough available seats. Maps to HTTP 409. */
+/** Thrown when a fixture does not have enough available seats to fulfil a reservation request. */
 public class InsufficientSeatsException extends RuntimeException {
 
     private final int availableSeats;
 
-    public InsufficientSeatsException(String message, int availableSeats) {
-        super(message);
+    public InsufficientSeatsException(int availableSeats) {
+        super("Insufficient seats. Available: " + availableSeats);
         this.availableSeats = availableSeats;
     }
 

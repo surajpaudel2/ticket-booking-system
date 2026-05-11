@@ -1,9 +1,16 @@
 package com.tbs.eventservice.exception;
 
-/** Thrown when a requested fixture does not exist in the database. Maps to HTTP 404. */
+/** Thrown when a requested Fixture does not exist in the database. */
 public class EventNotFoundException extends RuntimeException {
 
-    public EventNotFoundException(String message) {
-        super(message);
+    private final Long fixtureId;
+
+    public EventNotFoundException(Long fixtureId) {
+        super("Fixture not found with id: " + fixtureId);
+        this.fixtureId = fixtureId;
+    }
+
+    public Long getFixtureId() {
+        return fixtureId;
     }
 }

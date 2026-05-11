@@ -10,8 +10,10 @@ import org.springframework.stereotype.Component;
 import java.util.function.Consumer;
 
 /**
- * Listens for seats.release events published by booking-service.
- * Restores seat count in DB and updates Redis cache when a booking fails or expires.
+ * Listens for seats.release events from booking-service.
+ * Seat release is processed asynchronously — booking-service sends the event
+ * and returns to the caller immediately without waiting for this listener.
+ * Spring Cloud Stream manages the consumer thread separately from the HTTP thread.
  */
 @Component
 @Slf4j
@@ -20,13 +22,14 @@ public class SeatsReleaseListener {
 
     private final FixtureService fixtureService;
 
-    // Receives the release event and delegates seat restoration to FixtureService
+    // Consumes seats.release events and delegates to FixtureService for atomic DB restoration
     @Bean
     public Consumer<SeatsReleaseEventPayload> seatsRelease() {
         return payload -> {
-            log.info("Received seatsRelease event: fixtureId={}, seats={}, reason={}",
+            log.info("Received seatsRelease: fixtureId={} seats={} reason={}",
                     payload.fixtureId(), payload.requestedSeats(), payload.reason());
             fixtureService.releaseSeats(payload.fixtureId(), payload.requestedSeats());
+            log.info("Seats release completed for fixtureId={}", payload.fixtureId());
         };
     }
 }

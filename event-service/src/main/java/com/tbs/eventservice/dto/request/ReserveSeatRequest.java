@@ -4,28 +4,26 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-/** Request body for the reserve-seats endpoint consumed internally by booking-service via Feign. */
+/** Request body for seat reservation — validated before entering the service layer. */
+@Getter
+@Setter
+@NoArgsConstructor
 public class ReserveSeatRequest {
 
     @NotNull
-    @Schema(description = "ID of the fixture to reserve seats for", example = "7")
+    @Schema(description = "ID of the fixture", example = "42")
     private Long fixtureId;
 
-    @Min(1) @Max(10)
-    @Schema(description = "Number of seats to reserve (1–10)", example = "2")
+    @Min(1)
+    @Max(10)
+    @Schema(description = "Seats to reserve. Min 1, max 10.", example = "2")
     private int requestedSeats;
 
     @NotNull
-    @Schema(description = "ID of the user requesting the seats", example = "42")
+    @Schema(description = "ID of the user requesting seats", example = "1")
     private Long userId;
-
-    public Long getFixtureId() { return fixtureId; }
-    public void setFixtureId(Long fixtureId) { this.fixtureId = fixtureId; }
-
-    public int getRequestedSeats() { return requestedSeats; }
-    public void setRequestedSeats(int requestedSeats) { this.requestedSeats = requestedSeats; }
-
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
 }

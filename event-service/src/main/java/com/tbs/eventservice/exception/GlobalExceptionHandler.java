@@ -1,56 +1,51 @@
 package com.tbs.eventservice.exception;
 
+import com.tbs.eventservice.dto.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
-import java.util.Map;
-
-/** Maps event-service domain exceptions to structured HTTP error responses. */
+/** Maps all exceptions to uniform ApiResponse wrappers with appropriate HTTP status codes. */
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
-    /** Uniform error body shared by all handlers. */
-    private record ApiErrorResponse(String message, int status, LocalDateTime timestamp) {}
-
-    // Returns 404 when a fixture ID does not exist
+    // 404 — fixture does not exist in DB
     @ExceptionHandler(EventNotFoundException.class)
-    public ResponseEntity<ApiErrorResponse> handleNotFound(EventNotFoundException ex) {
-        log.error("EventNotFoundException: {}", ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ApiErrorResponse(ex.getMessage(), 404, LocalDateTime.now()));
+    public ResponseEntity<ApiResponse<?>> handleEventNotFound(EventNotFoundException ex) {
+        log.error("EventNotFoundException [{}]: {}", ex.getClass().getSimpleName(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.failure(ex.getMessage()));
     }
 
-    // Returns 409 and includes the current available seat count so callers can surface it to users
+    // 409 — seat count is below what was requested; includes live available count in message
     @ExceptionHandler(InsufficientSeatsException.class)
-    public ResponseEntity<Map<String, Object>> handleInsufficientSeats(InsufficientSeatsException ex) {
-        log.error("InsufficientSeatsException: {} — available: {}", ex.getMessage(), ex.getAvailableSeats(), ex);
-        Map<String, Object> body = Map.of(
-                "message", ex.getMessage(),
-                "status", 409,
-                "availableSeats", ex.getAvailableSeats(),
-                "timestamp", LocalDateTime.now().toString()
-        );
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    public ResponseEntity<ApiResponse<?>> handleInsufficientSeats(InsufficientSeatsException ex) {
+        log.error("InsufficientSeatsException [{}]: {}", ex.getClass().getSimpleName(), ex.getMessage());
+        String message = "Insufficient seats. Available: " + ex.getAvailableSeats();
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.failure(message));
     }
 
-    // Returns 409 when the Redis distributed lock for a fixture could not be acquired
+    // 409 — Redis lock contention; caller should retry
     @ExceptionHandler(SeatLockException.class)
-    public ResponseEntity<ApiErrorResponse> handleSeatLock(SeatLockException ex) {
-        log.error("SeatLockException: {}", ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ApiErrorResponse(ex.getMessage(), 409, LocalDateTime.now()));
+    public ResponseEntity<ApiResponse<?>> handleSeatLock(SeatLockException ex) {
+        log.error("SeatLockException [{}]: {}", ex.getClass().getSimpleName(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.failure(ex.getMessage()));
     }
 
-    // Catch-all for unhandled exceptions
+    // 400 — Bean Validation failure on request body
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<?>> handleValidation(MethodArgumentNotValidException ex) {
+        log.error("Validation failed [{}]: {}", ex.getClass().getSimpleName(), ex.getMessage());
+        return ResponseEntity.badRequest().body(ApiResponse.failure("Validation failed"));
+    }
+
+    // 500 — catch-all to prevent stack traces leaking to callers
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleGeneric(Exception ex) {
-        log.error("Unhandled exception: {}", ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiErrorResponse("An unexpected error occurred", 500, LocalDateTime.now()));
+    public ResponseEntity<ApiResponse<?>> handleGeneric(Exception ex) {
+        log.error("Unhandled exception [{}]: {}", ex.getClass().getSimpleName(), ex.getMessage());
+        return ResponseEntity.internalServerError().body(ApiResponse.failure("An unexpected error occurred"));
     }
 }

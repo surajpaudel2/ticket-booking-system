@@ -1,6 +1,7 @@
 package com.tbs.bookingservice.exception;
 
-import com.tbs.bookingservice.dto.response.ApiErrorResponse;
+import com.tbs.bookingservice.dto.response.ApiResponse;
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,40 +9,48 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-/** Maps domain and validation exceptions to structured HTTP error responses. */
+/** Maps all exceptions to a uniform ApiResponse wrapper with appropriate HTTP status codes. */
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
-    // Handles booking domain errors with their explicit HTTP status
+    // Handles domain exceptions thrown by booking-service business logic
     @ExceptionHandler(BookingException.class)
-    public ResponseEntity<ApiErrorResponse> handleBookingException(BookingException ex) {
-        log.error("BookingException: {}", ex.getMessage(), ex);
-        return ResponseEntity.status(ex.getStatus())
-                .body(new ApiErrorResponse(ex.getMessage(), ex.getStatus().value(), LocalDateTime.now()));
+    public ResponseEntity<ApiResponse<?>> handleBookingException(BookingException ex) {
+        log.error("BookingException [{}]: {}", ex.getClass().getSimpleName(), ex.getMessage());
+        return ResponseEntity.status(ex.getStatus()).body(ApiResponse.failure(ex.getMessage()));
     }
 
-    // Returns 400 with a map of field name → validation message
+    // Returns per-field validation error details as a joined message string
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex) {
-        log.error("Validation failure: {}", ex.getMessage(), ex);
-        Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
-                .collect(Collectors.toMap(
-                        fe -> fe.getField(),
-                        fe -> fe.getDefaultMessage() != null ? fe.getDefaultMessage() : "invalid"
-                ));
-        return ResponseEntity.badRequest().body(errors);
+    public ResponseEntity<ApiResponse<?>> handleValidation(MethodArgumentNotValidException ex) {
+        log.error("Validation failed [{}]: {}", ex.getClass().getSimpleName(), ex.getMessage());
+        String errors = ex.getBindingResult().getFieldErrors().stream()
+                .map(e -> e.getField() + ": " + e.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        return ResponseEntity.badRequest().body(ApiResponse.failure("Validation failed: " + errors));
     }
 
-    // Catch-all for any unhandled exception — never leak internal details
+    // Safety net in case FeignErrorDecoder is bypassed — normalises 404 from downstream
+    @ExceptionHandler(FeignException.NotFound.class)
+    public ResponseEntity<ApiResponse<?>> handleFeignNotFound(FeignException.NotFound ex) {
+        log.error("FeignException.NotFound [{}]: {}", ex.getClass().getSimpleName(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.failure("Event not found"));
+    }
+
+    // Safety net for 409 conflicts not caught by FeignErrorDecoder
+    @ExceptionHandler(FeignException.Conflict.class)
+    public ResponseEntity<ApiResponse<?>> handleFeignConflict(FeignException.Conflict ex) {
+        log.error("FeignException.Conflict [{}]: {}", ex.getClass().getSimpleName(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.failure("Insufficient seats available"));
+    }
+
+    // Catch-all for any unhandled exception to prevent stack traces leaking to clients
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleGeneric(Exception ex) {
-        log.error("Unhandled exception: {}", ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiErrorResponse("An unexpected error occurred", 500, LocalDateTime.now()));
+    public ResponseEntity<ApiResponse<?>> handleGeneric(Exception ex) {
+        log.error("Unhandled exception [{}]: {}", ex.getClass().getSimpleName(), ex.getMessage());
+        return ResponseEntity.internalServerError().body(ApiResponse.failure("An unexpected error occurred"));
     }
 }

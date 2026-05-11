@@ -42,6 +42,12 @@ public class BookingAttempt {
 
     private Long bookingId;
 
+    // Timestamp set when the nudge email is sent to this customer.
+    // Null means nudge has never been sent.
+    // The nudge scheduler checks this field to prevent duplicate nudge emails.
+    // Only set if status = ATTEMPTED, createdAt < now - 30 min, and seatHint is not null.
+    private LocalDateTime nudgeSentAt;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

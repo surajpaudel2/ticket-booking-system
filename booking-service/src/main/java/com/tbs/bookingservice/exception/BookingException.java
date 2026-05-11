@@ -2,7 +2,7 @@ package com.tbs.bookingservice.exception;
 
 import org.springframework.http.HttpStatus;
 
-/** Runtime exception for booking domain errors. Carries HTTP status for response mapping. */
+/** Domain exception for all booking-service business rule violations and downstream errors. */
 public class BookingException extends RuntimeException {
 
     private final HttpStatus status;

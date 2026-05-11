@@ -7,35 +7,38 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 
-/** Provides distributed locking over fixture seat modification using Redis SET NX EX. */
+/**
+ * Manages distributed Redis locks for fixture seat operations.
+ * Prevents race conditions when multiple concurrent booking requests
+ * target the same fixture simultaneously.
+ */
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class RedisLockUtil {
 
-    private static final String LOCK_PREFIX       = "lock:fixture:";
-    private static final long   LOCK_TTL_SECONDS  = 10;
-    private static final String LOCK_VALUE        = "locked";
+    private static final String LOCK_PREFIX = "lock:fixture:";
+    private static final long LOCK_TTL_SECONDS = 10;
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    // Attempts to acquire the lock atomically — returns false immediately if already held
+    // SET NX EX — returns true if this call set the key (lock acquired), false if key already existed
     public boolean acquireLock(Long fixtureId) {
         String key = LOCK_PREFIX + fixtureId;
         Boolean acquired = redisTemplate.opsForValue()
-                .setIfAbsent(key, LOCK_VALUE, Duration.ofSeconds(LOCK_TTL_SECONDS));
-        boolean result = Boolean.TRUE.equals(acquired);
-        if (result) {
-            log.debug("Lock acquired for fixtureId={}", fixtureId);
+                .setIfAbsent(key, "locked", Duration.ofSeconds(LOCK_TTL_SECONDS));
+        boolean success = Boolean.TRUE.equals(acquired);
+        if (success) {
+            log.info("Seat lock acquired for fixtureId={}", fixtureId);
         } else {
-            log.warn("Lock NOT acquired for fixtureId={}", fixtureId);
+            log.warn("Seat lock already held for fixtureId={}", fixtureId);
         }
-        return result;
+        return success;
     }
 
-    // Releases the lock — called in finally block after seat modification is complete
+    // Deletes the lock key — always called in finally to prevent lock leaks
     public void releaseLock(Long fixtureId) {
         redisTemplate.delete(LOCK_PREFIX + fixtureId);
-        log.debug("Lock released for fixtureId={}", fixtureId);
+        log.info("Seat lock released for fixtureId={}", fixtureId);
     }
 }

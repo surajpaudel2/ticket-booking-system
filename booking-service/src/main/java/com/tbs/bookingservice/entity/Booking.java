@@ -67,6 +67,16 @@ public class Booking {
     @Column(nullable = false)
     private BookingStatus status;
 
+    // Timestamp set when the first reminder email is sent (at ~5 min mark).
+    // Null means reminder 1 has not been sent yet.
+    // Reminder scheduler checks this to prevent duplicate sends.
+    private LocalDateTime reminder1SentAt;
+
+    // Timestamp set when the second reminder email is sent (at ~10 min mark).
+    // Null means reminder 2 has not been sent yet.
+    // Reminder scheduler checks this to prevent duplicate sends.
+    private LocalDateTime reminder2SentAt;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

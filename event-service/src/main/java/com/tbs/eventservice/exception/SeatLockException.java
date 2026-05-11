@@ -1,9 +1,9 @@
 package com.tbs.eventservice.exception;
 
-/** Thrown when the distributed Redis lock for a fixture cannot be acquired. Maps to HTTP 409. */
+/** Thrown when the distributed Redis seat lock cannot be acquired for a fixture. */
 public class SeatLockException extends RuntimeException {
 
-    public SeatLockException(String message) {
-        super(message);
+    public SeatLockException() {
+        super("Could not acquire seat lock. Please try again.");
     }
 }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
 
-/** Response returned to the caller after a booking is successfully initiated and payment intent created. */
+/** Response returned to the client after a booking is successfully initiated. */
 public record InitiateBookingResponse(
         Long bookingId,
         Long fixtureId,
