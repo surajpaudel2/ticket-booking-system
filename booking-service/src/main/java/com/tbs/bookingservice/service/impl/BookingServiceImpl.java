@@ -202,12 +202,20 @@ public class BookingServiceImpl implements BookingService {
             Long attemptId, Long userId, Long fixtureId,
             BookingAttemptFailureReason reason, ReserveSeatResponse reserve) {
         boolean isEventNotFound = reason == BookingAttemptFailureReason.EVENT_NOT_FOUND;
+
         return new BookingFailedEventPayload(
-                attemptId, userId, null, null, fixtureId, 0, reason.name(),
+                attemptId,
+                userId,
                 null,
-                isEventNotFound ? null : (reserve != null ? reserve.homeTeamName() : null),
-                isEventNotFound ? null : (reserve != null ? reserve.awayTeamName() : null),
-                isEventNotFound ? null : (reserve != null ? reserve.currentScheduledStartTime() : null));
+                null,
+                fixtureId,
+                0,
+                reason.name(),
+                null,
+                !isEventNotFound && reserve != null ? reserve.homeTeamName()             : null,
+                !isEventNotFound && reserve != null ? reserve.awayTeamName()             : null,
+                !isEventNotFound && reserve != null ? reserve.currentScheduledStartTime() : null
+        );
     }
 
     // Builds failed event payload from booking-level data (booking already persisted)

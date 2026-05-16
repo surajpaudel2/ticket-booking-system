@@ -10,6 +10,7 @@ import com.tbs.eventservice.repository.FixtureRepository;
 import com.tbs.eventservice.service.FixtureCacheService;
 import com.tbs.eventservice.service.FixtureService;
 import com.tbs.eventservice.util.RedisLockUtil;
+import com.tbs.eventservice.util.SeatValidatorUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,13 +33,13 @@ public class FixtureServiceImpl implements FixtureService {
     private final FixtureCacheService fixtureCacheService;
     private final RedisLockUtil redisLockUtil;
     private final TransactionTemplate transactionTemplate;
+    private final SeatValidatorUtil seatValidatorUtil;
 
     // Orchestrates cache-check, Redis lock, DB pessimistic lock, and seat deduction
     @Override
     public ReserveSeatResponse reserveSeats(ReserveSeatRequest request) {
         log.info("reserveSeats fixtureId={} requestedSeats={}", request.getFixtureId(), request.getRequestedSeats());
-        resolveFixtureOrThrow(request.getFixtureId());
-        checkCachedSeatsOrThrow(request.getFixtureId(), request.getRequestedSeats());
+        resolveAndCheckSeatsOrThrow(request.getFixtureId(), request.getRequestedSeats());
         acquireLockOrThrow(request.getFixtureId());
         try {
             Fixture updated = verifyAndReduceSeats(request.getFixtureId(), request.getRequestedSeats());
@@ -65,26 +66,22 @@ public class FixtureServiceImpl implements FixtureService {
         log.info("Seats released fixtureId={} count={} newAvailable={}", fixtureId, seats, fixture.getAvailableSeats());
     }
 
-    // Validates fixture exists; populates cache on DB hit; throws 404 if not found
-    private Fixture resolveFixtureOrThrow(Long fixtureId) {
+    private Fixture resolveAndCheckSeatsOrThrow(Long fixtureId, int requestedSeats) {
         Optional<Fixture> cached = fixtureCacheService.findFixtureFromCache(fixtureId);
-        if (cached.isPresent()) return cached.get();
+
+        if (cached.isPresent()) {
+            Fixture fixture = cached.get();
+            seatValidatorUtil.validateAvailability(fixture, requestedSeats);
+            log.debug("Cache hit — fixture resolved and seat check passed for fixtureId={}", fixtureId);
+            return fixture;
+        }
+
+        log.debug("Cache miss for fixtureId={} — fetching from DB and validating seats", fixtureId);
         Fixture fixture = fixtureRepository.findById(fixtureId)
                 .orElseThrow(() -> new EventNotFoundException(fixtureId));
+        seatValidatorUtil.validateAvailability(fixture, requestedSeats);
         fixtureCacheService.storeFixtureInCache(fixtureId, fixture);
         return fixture;
-    }
-
-    // Fast rejection via cached seat count before acquiring the expensive DB lock
-    private void checkCachedSeatsOrThrow(Long fixtureId, int requestedSeats) {
-        Optional<Fixture> cached = fixtureCacheService.findFixtureFromCache(fixtureId);
-        if (cached.isEmpty()) {
-            log.debug("Cache miss on seat check for fixtureId={} — DB will confirm inside lock", fixtureId);
-            return;
-        }
-        int cachedSeats = cached.get().getAvailableSeats();
-        if (cachedSeats < requestedSeats) throw new InsufficientSeatsException(cachedSeats);
-        log.debug("Cache indicates enough seats for fixtureId={}, proceeding to lock", fixtureId);
     }
 
     // Throws SeatLockException if another request already holds the Redis lock for this fixture
@@ -93,6 +90,7 @@ public class FixtureServiceImpl implements FixtureService {
     }
 
     // DB double-check inside lock with pessimistic write lock — authoritative seat deduction
+    // Cannot use @Transactional annotation because of the AOP rule, so using the TransactionTemplate directly.
     private Fixture verifyAndReduceSeats(Long fixtureId, int requestedSeats) {
         return transactionTemplate.execute(status -> {
             Fixture fixture = fixtureRepository.findByIdWithPessimisticLock(fixtureId)

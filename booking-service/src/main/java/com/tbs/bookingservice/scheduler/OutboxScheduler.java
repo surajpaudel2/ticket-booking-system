@@ -48,7 +48,6 @@ public class OutboxScheduler {
             routeToPublisher(event, payload);
             event.setStatus(OutboxEventStatus.PUBLISHED);
             event.setPublishedAt(LocalDateTime.now());
-            outboxEventRepository.save(event);
         } catch (Exception ex) {
             event.setRetryCount(event.getRetryCount() + 1);
             if (event.getRetryCount() >= MAX_RETRY) {
@@ -56,7 +55,13 @@ public class OutboxScheduler {
                 log.error("Outbox event permanently failed id={} type={}: {}",
                         event.getId(), event.getEventType(), ex.getMessage());
             }
-            outboxEventRepository.save(event);
+        } finally {
+            try {
+                outboxEventRepository.save(event); // single save point
+            } catch (Exception saveEx) {
+                log.error("Failed to persist outbox state for id={}: {}",
+                        event.getId(), saveEx.getMessage());
+            }
         }
     }
 
