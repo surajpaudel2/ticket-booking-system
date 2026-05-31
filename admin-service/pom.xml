@@ -6,56 +6,61 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>4.0.6</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
+
     <groupId>com.tbs</groupId>
     <artifactId>admin-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>admin-service</name>
     <description>admin-service</description>
-    <url/>
-    <licenses>
-        <license/>
-    </licenses>
-    <developers>
-        <developer/>
-    </developers>
-    <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
-    </scm>
+
     <properties>
         <java.version>21</java.version>
         <spring-cloud.version>2025.1.1</spring-cloud.version>
     </properties>
+
     <dependencies>
+        <!-- ================================================================= -->
+        <!-- 1. CORE WEB & API                                                 -->
+        <!-- ================================================================= -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc</artifactId>
+        </dependency>
+
+        <!-- ================================================================= -->
+        <!-- 2. SPRING CLOUD & MICROSERVICES                                   -->
+        <!-- ================================================================= -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-        </dependency>
 
+        <!-- ================================================================= -->
+        <!-- 3. UTILITIES & DEVELOPER TOOLS                                    -->
+        <!-- ================================================================= -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
+
+        <!-- ================================================================= -->
+        <!-- 4. TESTING                                                        -->
+        <!-- ================================================================= -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -70,6 +75,7 @@
 
     <build>
         <plugins>
+            <!-- Spring Boot Build Plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

@@ -18,7 +18,7 @@ import static com.tbs.gatewayservice.constant.GatewayConstants.*;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-public class RouteConfig {
+public class   RouteConfig {
 
     private final JwtAuthGatewayFilterFactory jwtAuthGatewayFilterFactory;
     private final RateLimiterKeyResolver rateLimiterKeyResolver;
@@ -114,11 +114,11 @@ public class RouteConfig {
         JwtAuthGatewayFilterFactory.Config authConfig = new JwtAuthGatewayFilterFactory.Config(false);
         return routes.route("event-service", r -> r
                 .path("/api/*/events/**")
-                .filters(f -> applyCircuitBreaker(
-                        applyAuthenticatedRateLimiter(
-                                f.filter(jwtAuthGatewayFilterFactory.apply(authConfig)),
-                                authenticatedKeyResolver),
-                        CB_EVENT_SERVICE, FALLBACK_EVENT))
+//                .filters(f -> applyCircuitBreaker(
+//                        applyAuthenticatedRateLimiter(
+//                                f.filter(jwtAuthGatewayFilterFactory.apply(authConfig)),
+//                                authenticatedKeyResolver),
+//                        CB_EVENT_SERVICE, FALLBACK_EVENT))
                 .uri("lb://event-service"));
     }
 
@@ -127,11 +127,11 @@ public class RouteConfig {
         JwtAuthGatewayFilterFactory.Config authConfig = new JwtAuthGatewayFilterFactory.Config(false);
         return routes.route("booking-service", r -> r
                 .path("/api/*/bookings/**")
-                .filters(f -> applyCircuitBreaker(
-                        applyAuthenticatedRateLimiter(
-                                f.filter(jwtAuthGatewayFilterFactory.apply(authConfig)),
-                                authenticatedKeyResolver),
-                        CB_BOOKING_SERVICE, FALLBACK_BOOKING))
+//                .filters(f -> applyCircuitBreaker(
+//                        applyAuthenticatedRateLimiter(
+//                                f.filter(jwtAuthGatewayFilterFactory.apply(authConfig)),
+//                                authenticatedKeyResolver),
+//                        CB_BOOKING_SERVICE, FALLBACK_BOOKING))
                 .uri("lb://booking-service"));
     }
 
@@ -140,11 +140,11 @@ public class RouteConfig {
         JwtAuthGatewayFilterFactory.Config authConfig = new JwtAuthGatewayFilterFactory.Config(false);
         return routes.route("payment-service", r -> r
                 .path("/api/*/payments/**")
-                .filters(f -> applyCircuitBreaker(
-                        applyAuthenticatedRateLimiter(
-                                f.filter(jwtAuthGatewayFilterFactory.apply(authConfig)),
-                                authenticatedKeyResolver),
-                        CB_PAYMENT_SERVICE, FALLBACK_PAYMENT))
+//                .filters(f -> applyCircuitBreaker(
+//                        applyAuthenticatedRateLimiter(
+//                                f.filter(jwtAuthGatewayFilterFactory.apply(authConfig)),
+//                                authenticatedKeyResolver),
+//                        CB_PAYMENT_SERVICE, FALLBACK_PAYMENT))
                 .uri("lb://payment-service"));
     }
 

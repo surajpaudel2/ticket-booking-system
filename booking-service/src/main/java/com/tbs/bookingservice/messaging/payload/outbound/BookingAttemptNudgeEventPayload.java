@@ -1,7 +1,5 @@
 package com.tbs.bookingservice.messaging.payload.outbound;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 import java.time.LocalDateTime;
 
 /**
@@ -13,5 +11,5 @@ public record BookingAttemptNudgeEventPayload(
         Long userId,
         Long fixtureId,
         String seatHint,
-        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime attemptedAt
+        LocalDateTime attemptedAt
 ) {}

@@ -1,5 +1,7 @@
 package com.tbs.bookingservice.service.impl;
 
+import com.tbs.bookingservice.dto.cache.BookingPendingCache;
+import com.tbs.bookingservice.mapper.BookingCacheMapper;
 import com.tbs.bookingservice.service.BookingCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,42 +9,61 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Optional;
 
-/**
- * Manages Redis operations for booking-service. Stores pending booking window
- * with TTL and provides safe cache reads that never throw.
- */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class BookingCacheServiceImpl implements BookingCacheService {
 
-    private static final String KEY_PREFIX_BOOKING_PENDING = "booking:pending:";
-    private static final long TTL_MINUTES = 15;
+    private static final String KEY_PREFIX = "booking:pending:";
+    private static final Duration TTL = Duration.ofMinutes(15);
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final BookingCacheMapper bookingCacheMapper;
 
-    // Stores booking pending state with 15-minute TTL so expiry scheduler has a fast cache check
     @Override
-    public void storeBookingPending(Long bookingId, Object data) {
-        String key = KEY_PREFIX_BOOKING_PENDING + bookingId;
-        redisTemplate.opsForValue().set(key, data, Duration.ofMinutes(TTL_MINUTES));
-        log.info("Stored booking:pending:{} with TTL={}min", bookingId, TTL_MINUTES);
+    public void storeBookingPending(BookingPendingCache bookingPendingCache) {
+        try {
+            redisTemplate.opsForValue().set(KEY_PREFIX + bookingPendingCache.bookingId(), bookingPendingCache, TTL);
+            log.info("Stored booking:pending:{} with TTL={}min", bookingPendingCache.bookingId(), TTL.toMinutes());
+        } catch (Exception ex) {
+            log.warn("Redis store failed for bookingId={}: {}", bookingPendingCache.bookingId(), ex.getMessage());
+        }
     }
 
-    // Removes the pending key when a booking expires, is confirmed, or is cancelled
     @Override
     public void evictBookingPending(Long bookingId) {
-        String key = KEY_PREFIX_BOOKING_PENDING + bookingId;
-        redisTemplate.delete(key);
-        log.info("Evicted booking:pending:{}", bookingId);
+        try {
+            redisTemplate.delete(KEY_PREFIX + bookingId);
+            log.info("Evicted booking:pending:{}", bookingId);
+        } catch (Exception ex) {
+            log.warn("Redis evict failed for bookingId={}: {}", bookingId, ex.getMessage());
+        }
     }
 
-    // Returns true if the booking window is still active in Redis
+    @Override
+    public Optional<BookingPendingCache> getBookingPending(Long bookingId) {
+        try {
+            Object cached =  redisTemplate.opsForValue().get(KEY_PREFIX + bookingId);
+            if(cached == null) {
+                log.debug("BookingPending cache miss for bookingId={}", bookingId);
+                return Optional.empty();
+            }
+
+            log.debug("BookingPending cache found for bookingId={}", bookingId);
+            return Optional.of(bookingCacheMapper.toBookingPendingCache(cached));
+
+        } catch (Exception ex) {
+            log.warn("Redis BookingPendingCache retrieve failed for bookingId={}: {}", bookingId, ex.getMessage());
+            return Optional.empty();
+        }
+    }
+
     @Override
     public boolean isBookingPendingInCache(Long bookingId) {
         try {
-            return Boolean.TRUE.equals(redisTemplate.hasKey(KEY_PREFIX_BOOKING_PENDING + bookingId));
+            return Boolean.TRUE.equals(redisTemplate.hasKey(KEY_PREFIX + bookingId));
         } catch (Exception ex) {
             log.warn("Redis check failed for bookingId={}: {}", bookingId, ex.getMessage());
             return false;

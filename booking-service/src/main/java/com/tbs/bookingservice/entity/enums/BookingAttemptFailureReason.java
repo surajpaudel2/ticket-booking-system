@@ -3,5 +3,6 @@ package com.tbs.bookingservice.entity.enums;
 public enum BookingAttemptFailureReason {
     EVENT_NOT_FOUND,
     INSUFFICIENT_SEATS,
-    PAYMENT_FAILED
+    PAYMENT_FAILED,
+    SEAT_RESERVATION_FAILED,
 }

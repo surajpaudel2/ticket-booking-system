@@ -5,14 +5,8 @@ spring:
   application:
     name: notification-service
   config:
-    import: "optional:configserver:"
-  cloud:
-    config:
-      discovery:
-        enabled: true
-        service-id: config-server
+    import: "optional:configserver:http://localhost:8081"
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8080/eureka
+logging:
+  level:
+    com.tbs.notificationservice: DEBUG

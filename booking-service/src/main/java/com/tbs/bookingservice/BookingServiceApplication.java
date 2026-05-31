@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableAsync
 @EnableScheduling
-@EnableFeignClients(basePackages = "com.tbs.bookingservice.client")
+@EnableFeignClients
 public class BookingServiceApplication {
 
     public static void main(String[] args) {

@@ -9,9 +9,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class FeignConfig {
 
-    // Registers FeignErrorDecoder globally for all Feign clients in this service
+    // Handles non-2xx responses — maps 404/409/5xx from downstream into domain BookingExceptions
     @Bean
     public ErrorDecoder errorDecoder() {
         return new FeignErrorDecoder();
     }
+
 }

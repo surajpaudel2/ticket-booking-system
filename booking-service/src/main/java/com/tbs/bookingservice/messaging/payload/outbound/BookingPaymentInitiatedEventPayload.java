@@ -1,7 +1,5 @@
 package com.tbs.bookingservice.messaging.payload.outbound;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 import java.time.LocalDateTime;
 
 /**
@@ -17,9 +15,9 @@ public record BookingPaymentInitiatedEventPayload(
         Long fixtureId,
         String homeTeamName,
         String awayTeamName,
-        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime currentScheduledStartTime,
+        LocalDateTime currentScheduledStartTime,
         int requestedSeats,
         double totalAmount,
         String paymentIntentId,
-        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime expiresAt
+        LocalDateTime expiresAt
 ) {}

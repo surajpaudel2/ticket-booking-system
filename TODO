@@ -1,0 +1,17 @@
+- If the redis is down then we have to implement logic in such a way that it will fallback in DB in the event-service for reducing seats, so in this condition DB will get a lot of traffics[tradeoff] but acceptable in this case. However, if the redis is running properly then we should fail fast, which is in this case running fine but if the redis is not up then it will throw an error.
+
+- Handle, feign client exception for all the services properly, right now we are only using the event-service properly, however, for payment-service, notification and others we are not handling correctly, also, we might need to take care of the "reason" of the booking failed or other logics in the business.
+
+- For future, we can have bidirectional event-way of communicating, for example, Booking-service will publish Seats_Release and Event-service will provide confirmation whether the Seats were actually released or not by publishing the event like Seats_Release_Confirmation, so that we can have better control over the system and also we can have better monitoring and logging for the events. Also, take care about the edge case where our system might keep on publishing the same event again and again, so we named as different event name for the confrmation and the publisher.
+
+- Right now we are trusting the booking-service for nudge message sending, but in future, we can have better where booking-service will just publish the event with requested seats that user wants and notification-service will call the event-service to check the seats and construct the nudge message based on that.
+
+- In future, for the event sending mechanisms, we have not retry options, if the event sending is failed then add in db for retry like an outbox with some threesold value.
+
+- Fix the internal call security.
+
+- make webhook route to go via api-gateway for the payment-service and add extra security layer for the webhook route.
+
+- Consider adding BOOKING_ATTEMPT_ID in Stripe receipt or something like that, not compulsory but if it is the best requirement then add it in the Stripe receipt for better tracking and debugging purposes.
+
+- Remove nudge from booking.java entity and do it programatically.

@@ -25,5 +25,9 @@ public enum OutboxEventType {
     // Published to booking.attempted.nudge binding — triggers abandoned booking nudge email.
     // Created by nudge scheduler when ATTEMPTED BookingAttempt is older than 30 min,
     // nudgeSentAt is null, and seatHint is not null.
-    BOOKING_ATTEMPTED_NUDGE
+    BOOKING_ATTEMPTED_NUDGE,
+
+    // Published to booking.confirmed binding — triggers confirmation email to the customer.
+    // Created by PaymentResultService when payment-service emits a payment.succeeded event.
+    BOOKING_CONFIRMED
 }

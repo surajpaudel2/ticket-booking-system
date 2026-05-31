@@ -10,7 +10,10 @@
       "Bash(del \"C:\\\\Users\\\\Suraj Paudel\\\\OneDrive\\\\Desktop\\\\ticket-booking-system\\\\auth-service\\\\src\\\\main\\\\java\\\\com\\\\tbs\\\\authservice\\\\dto\\\\request\\\\CreateUserProfileRequest.java\")",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Suraj Paudel\\\\OneDrive\\\\Desktop\\\\ticket-booking-system\" -Directory)",
       "Bash(Select-Object Name)",
-      "Bash(Get-ChildItem -Recurse -Filter \"*.java\" -Path \"C:\\\\Users\\\\Suraj Paudel\\\\OneDrive\\\\Desktop\\\\ticket-booking-system\\\\event-service\")"
+      "Bash(Get-ChildItem -Recurse -Filter \"*.java\" -Path \"C:\\\\Users\\\\Suraj Paudel\\\\OneDrive\\\\Desktop\\\\ticket-booking-system\\\\event-service\")",
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "WebFetch(domain:spring.io)"
     ]
   }
 }

@@ -1,27 +1,13 @@
 package com.tbs.paymentservice.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.validation.constraints.Positive;
 
-/** Request body for payment initiation — validated before entering the service layer. */
-@Getter
-@Setter
-@NoArgsConstructor
-public class InitiatePaymentRequest {
-
-    @NotNull
-    private Long bookingId;
-
-    @NotNull
-    private Double amount;
-
-    @NotNull
-    @Size(min = 3, max = 3)
-    private String currency;
-
-    @NotNull
-    private Long userId;
-}
+/** Feign request body from booking-service to create a Stripe PaymentIntent. */
+public record InitiatePaymentRequest(
+        @NotNull Long bookingId,
+        @Positive double amount,
+        @NotBlank String currency,
+        @NotNull Long userId
+) {}

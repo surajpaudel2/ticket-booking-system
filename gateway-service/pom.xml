@@ -8,6 +8,7 @@
         <version>4.0.6</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
+
     <groupId>com.tbs</groupId>
     <artifactId>gateway-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
@@ -26,42 +27,29 @@
         <tag/>
         <url/>
     </scm>
+
     <properties>
         <java.version>21</java.version>
         <spring-cloud.version>2025.1.1</spring-cloud.version>
     </properties>
+
     <dependencies>
-        <!-- Gateway -->
+        <!-- ================================================================= -->
+        <!-- 1. CORE ROUTING & API DOCUMENTATION                               -->
+        <!-- ================================================================= -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
         </dependency>
-
-        <!-- Config client -->
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-config</artifactId>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+            <version>2.6.0</version>
         </dependency>
 
-        <!-- Redis reactive (rate limiter) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
-        </dependency>
-
-        <!-- Reactive circuit breaker with Resilience4J -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-circuitbreaker-reactor-resilience4j</artifactId>
-        </dependency>
-
-        <!-- Eureka client -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-        </dependency>
-
-        <!-- JWT -->
+        <!-- ================================================================= -->
+        <!-- 2. SECURITY & AUTHENTICATION (JWT)                                -->
+        <!-- ================================================================= -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -80,27 +68,46 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- SpringDoc OpenAPI (WebFlux variant) -->
+        <!-- ================================================================= -->
+        <!-- 3. RESILIENCY & RATE LIMITING (Reactive Stack)                    -->
+        <!-- ================================================================= -->
         <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
-            <version>2.6.0</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-circuitbreaker-reactor-resilience4j</artifactId>
         </dependency>
 
-        <!-- Actuator -->
+        <!-- ================================================================= -->
+        <!-- 4. SPRING CLOUD INFRASTRUCTURE                                    -->
+        <!-- ================================================================= -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+
+        <!-- ================================================================= -->
+        <!-- 5. OBSERVABILITY & UTILITIES                                      -->
+        <!-- ================================================================= -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
-
-        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
 
-        <!-- Test -->
+        <!-- ================================================================= -->
+        <!-- 6. TESTING                                                        -->
+        <!-- ================================================================= -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -112,6 +119,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -126,6 +134,7 @@
 
     <build>
         <plugins>
+            <!-- Spring Boot Build Plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

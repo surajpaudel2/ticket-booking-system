@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;font-family:Arial,sans-serif;background-color:#f4f6f8;">
+<table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+        <td align="center" style="padding:40px 20px;">
+            <table width="600" cellpadding="0" cellspacing="0"
+                   style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+
+                <!-- Header -->
+                <tr>
+                    <td style="background-color:#0d1b2e;padding:28px 40px;text-align:center;">
+                        <h1 style="color:#ffffff;margin:0;font-size:22px;font-weight:bold;letter-spacing:1px;">
+                            TBS — Ticket Booking System
+                        </h1>
+                    </td>
+                </tr>
+
+                <!-- Body -->
+                <tr>
+                    <td style="padding:40px;">
+
+                        <p style="font-size:16px;color:#333333;margin:0 0 8px 0;">
+                            Hi <strong th:text="${recipientName}"></strong>,
+                        </p>
+
+                        <!-- Match details -->
+                        <div style="background-color:#f0f4f8;border-radius:6px;padding:20px;margin:24px 0;text-align:center;">
+                            <h2 style="color:#0d1b2e;margin:0 0 8px 0;font-size:20px;">
+                                <span th:text="${homeTeamName}"></span>
+                                <span style="color:#888888;"> vs </span>
+                                <span th:text="${awayTeamName}"></span>
+                            </h2>
+                            <p style="color:#555555;margin:0;font-size:14px;"
+                               th:text="${#temporals.format(matchDateTime, 'EEEE, dd MMMM yyyy HH:mm')}"></p>
+                        </div>
+
+                        <!-- Status banner -->
+                        <div style="background-color:#fff3f3;border-left:4px solid #e53e3e;padding:16px;border-radius:4px;margin-bottom:24px;">
+                            <p style="color:#e53e3e;font-weight:bold;margin:0 0 8px 0;font-size:16px;">
+                                Your booking has expired.
+                            </p>
+                            <p style="color:#555555;margin:0;font-size:14px;">
+                                <span th:text="${requestedSeats}"></span> seat(s) have been released back to the pool.
+                            </p>
+                        </div>
+
+                        <table cellpadding="0" cellspacing="0" width="100%"
+                               style="background-color:#f9f9f9;border-radius:6px;padding:16px;margin-bottom:24px;">
+                            <tr>
+                                <td style="color:#555555;font-size:14px;padding:4px 0;">Seats requested</td>
+                                <td style="color:#0d1b2e;font-weight:bold;font-size:14px;text-align:right;"
+                                    th:text="${requestedSeats}"></td>
+                            </tr>
+                            <tr>
+                                <td style="color:#555555;font-size:14px;padding:4px 0;">Expired at</td>
+                                <td style="color:#0d1b2e;font-weight:bold;font-size:14px;text-align:right;"
+                                    th:text="${#temporals.format(expiredAt, 'dd MMM yyyy, HH:mm')}"></td>
+                            </tr>
+                        </table>
+
+                        <p style="color:#555555;font-size:14px;">
+                            Seats are limited — search again to secure your spot before the match.
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                    <td style="background-color:#f4f6f8;padding:20px 40px;text-align:center;border-top:1px solid #e0e0e0;">
+                        <p style="color:#888888;font-size:12px;margin:0;" th:text="#{email.footer}"></p>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

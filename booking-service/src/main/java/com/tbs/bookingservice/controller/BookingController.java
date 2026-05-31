@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.ExecutionException;
+
 /** Exposes booking initiation endpoints for the Sports Ticketing Platform. */
 @RestController
 @RequestMapping("/api/v1/bookings")
@@ -47,7 +49,7 @@ public class BookingController {
                     description = "Payment initiation failed")
     })
     public ResponseEntity<ApiResponse<InitiateBookingResponse>> initiateBooking(
-            @Valid @RequestBody InitiateBookingRequest request) {
+            @Valid @RequestBody InitiateBookingRequest request) throws ExecutionException, InterruptedException {
         log.info("POST /initiate received fixtureId={} userId={}", request.getFixtureId(), request.getUserId());
         InitiateBookingResponse response = bookingService.initiateBooking(request);
         return ResponseEntity.ok(ApiResponse.success("Booking initiated successfully", response));

@@ -2,7 +2,7 @@ package com.tbs.paymentservice.exception;
 
 import org.springframework.http.HttpStatus;
 
-/** Domain exception for payment processing failures. */
+/** Domain exception for payment-service business rule violations and Stripe errors. */
 public class PaymentException extends RuntimeException {
 
     private final HttpStatus status;

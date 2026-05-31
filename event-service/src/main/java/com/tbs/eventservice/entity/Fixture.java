@@ -1,5 +1,6 @@
 package com.tbs.eventservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.tbs.eventservice.entity.enums.FixtureClassification;
 import jakarta.persistence.*;
 import lombok.*;
@@ -41,6 +42,7 @@ public class Fixture {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "season_id")
+    @JsonBackReference
     private Season season;
 
     @OneToMany(mappedBy = "fixture", cascade = CascadeType.ALL, fetch = FetchType.LAZY) // Because one fixture can be postponed multiple times.

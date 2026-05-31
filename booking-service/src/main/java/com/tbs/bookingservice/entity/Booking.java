@@ -49,6 +49,12 @@ public class Booking {
 
     private LocalDateTime expiresAt;
 
+    @Column(nullable = false)
+    private String recipientEmail;
+
+    @Column(nullable = false)
+    private String recipientFullName;
+
     // OneToMany: one booking can have multiple cancellation records (e.g. retry attempts, partial cancellations).
     // mappedBy = "booking": CancelledBooking owns the FK; this is the inverse read-only view.
     // CascadeType.ALL + LAZY: cancellation records are lifecycle-bound to the booking — deleted with it, loaded on demand.

@@ -17,5 +17,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAllByStatusAndExpiresAtAfterAndReminder1SentAtIsNull(BookingStatus status, LocalDateTime threshold);
 
     // Used by reminder 2 scheduler — bookings expiring within 5 min that haven't had reminder 2 sent
-    List<Booking> findAllByStatusAndExpiresAtAfterAndReminder2SentAtIsNull(BookingStatus status, LocalDateTime threshold);
+    List<Booking> findAllByStatusAndExpiresAtAfterAndReminder1SentAtIsNotNullAndReminder2SentAtIsNull(
+            BookingStatus status, LocalDateTime now);
 }
